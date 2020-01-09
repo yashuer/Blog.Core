@@ -25,6 +25,8 @@ namespace Blog.Core.IServices.BASE
         Task<bool> Update(TEntity model);
         Task<bool> Update(TEntity entity, string strWhere);
 
+        Task<bool> Update(object operateAnonymousObjects);
+
         Task<bool> Update(TEntity entity, List<string> lstColumns = null, List<string> lstIgnoreColumns = null, string strWhere = "");
 
         Task<List<TEntity>> Query();
@@ -43,6 +45,11 @@ namespace Blog.Core.IServices.BASE
 
 
         Task<PageModel<TEntity>> QueryPage(Expression<Func<TEntity, bool>> whereExpression, int intPageIndex = 1, int intPageSize = 20, string strOrderByFileds = null);
+
+        Task<List<TResult>> QueryMuch<T, T2, T3, TResult>(
+            Expression<Func<T, T2, T3, object[]>> joinExpression,
+            Expression<Func<T, T2, T3, TResult>> selectExpression,
+            Expression<Func<T, T2, T3, bool>> whereLambda = null) where T : class, new();
     }
 
 }

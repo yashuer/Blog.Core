@@ -63,5 +63,14 @@ namespace Blog.Core.Services
         {
             return await _dal.WithChildrenModel();
         }
+        public async Task<List<TestMuchTableResult>> QueryMuchTable()
+        {
+            return await _dal.QueryMuchTable();
+        }
+
+        public async Task<List<RoleModulePermission>> RoleModuleMaps()
+        {
+            return await _dal.RoleModuleMaps();
+        }
     }
 }

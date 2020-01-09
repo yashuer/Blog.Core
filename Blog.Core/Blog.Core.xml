@@ -25,6 +25,37 @@
             面向切面的缓存使用
             </summary>
         </member>
+        <member name="T:Blog.Core.AOP.BlogTranAOP">
+            <summary>
+            事务拦截器BlogTranAOP 继承IInterceptor接口
+            </summary>
+        </member>
+        <member name="M:Blog.Core.AOP.BlogTranAOP.Intercept(Castle.DynamicProxy.IInvocation)">
+            <summary>
+            实例化IInterceptor唯一方法 
+            </summary>
+            <param name="invocation">包含被拦截方法的信息</param>
+        </member>
+        <member name="M:Blog.Core.AOP.CacheAOPbase.Intercept(Castle.DynamicProxy.IInvocation)">
+            <summary>
+            AOP的拦截方法
+            </summary>
+            <param name="invocation"></param>
+        </member>
+        <member name="M:Blog.Core.AOP.CacheAOPbase.CustomCacheKey(Castle.DynamicProxy.IInvocation)">
+            <summary>
+            自定义缓存的key
+            </summary>
+            <param name="invocation"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Blog.Core.AOP.CacheAOPbase.GetArgumentValue(System.Object)">
+            <summary>
+            object 转 string
+            </summary>
+            <param name="arg"></param>
+            <returns></returns>
+        </member>
         <member name="M:Blog.Core.AuthHelper.OverWrite.JwtHelper.IssueJwt(Blog.Core.AuthHelper.OverWrite.TokenModelJwt)">
             <summary>
             颁发JWT字符串
@@ -107,17 +138,13 @@
             验证方案提供对象
             </summary>
         </member>
-        <member name="P:Blog.Core.AuthHelper.PermissionHandler.roleModulePermissionServices">
-            <summary>
-            services 层注入
-            </summary>
-        </member>
-        <member name="M:Blog.Core.AuthHelper.PermissionHandler.#ctor(Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider,Blog.Core.IServices.IRoleModulePermissionServices)">
+        <member name="M:Blog.Core.AuthHelper.PermissionHandler.#ctor(Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider,Blog.Core.IServices.IRoleModulePermissionServices,Microsoft.AspNetCore.Http.IHttpContextAccessor)">
             <summary>
             构造函数注入
             </summary>
             <param name="schemes"></param>
             <param name="roleModulePermissionServices"></param>
+            <param name="accessor"></param>
         </member>
         <member name="T:Blog.Core.AuthHelper.PermissionItem">
             <summary>
@@ -195,6 +222,11 @@
             <param name="signingCredentials">签名验证实体</param>
             <param name="expiration">过期时间</param>
         </member>
+        <member name="T:Blog.Core.AutoMapper.AutoMapperConfig">
+            <summary>
+            静态全局 AutoMapper 配置文件
+            </summary>
+        </member>
         <member name="M:Blog.Core.AutoMapper.CustomProfile.#ctor">
             <summary>
             配置构造函数，用来创建关系映射
@@ -205,7 +237,7 @@
             博客管理
             </summary>
         </member>
-        <member name="M:Blog.Core.Controllers.BlogController.#ctor(Blog.Core.IServices.IBlogArticleServices,Blog.Core.Common.IRedisCacheManager)">
+        <member name="M:Blog.Core.Controllers.BlogController.#ctor(Blog.Core.IServices.IBlogArticleServices,Blog.Core.Common.IRedisCacheManager,Microsoft.Extensions.Logging.ILogger{Blog.Core.Controllers.BlogController})">
             <summary>
             构造函数
             </summary>
@@ -256,6 +288,20 @@
             <param name="id"></param>
             <returns></returns>
         </member>
+        <member name="M:Blog.Core.Controllers.BlogController.Put(Blog.Core.Model.Models.BlogArticle)">
+            <summary>
+            更新博客信息
+            </summary>
+            <param name="BlogArticle"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Blog.Core.Controllers.BlogController.ApacheTestUpdate">
+            <summary>
+            apache jemeter 压力测试
+            更新接口
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:Blog.Core.Controllers.ClaimsController">
             <summary>
             这是一个测试的控制器，主要为了测试基于Claim的验证机制
@@ -268,19 +314,61 @@
             <param name="ids"></param>
             <returns></returns>
         </member>
+        <member name="M:Blog.Core.Controllers.DbFirstController.#ctor(Blog.Core.Model.Models.MyContext)">
+            <summary>
+            构造函数
+            </summary>
+            <param name="myContext"></param>
+        </member>
+        <member name="M:Blog.Core.Controllers.DbFirstController.GetFrameFiles">
+            <summary>
+            获取 整体框架 文件
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Blog.Core.Controllers.DbFirstController.GetModelFiles">
+            <summary>
+            获取 Model 层文件
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Blog.Core.Controllers.DbFirstController.GetIRepositoryFiles">
+            <summary>
+            获取 IRepository 层文件
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Blog.Core.Controllers.DbFirstController.GetIServiceFiles">
+            <summary>
+            获取 IService 层文件
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Blog.Core.Controllers.DbFirstController.GetRepositoryFiles">
+            <summary>
+            获取 Repository 层文件
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Blog.Core.Controllers.DbFirstController.GetServicesFiles">
+            <summary>
+            获取 Services 层文件
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:Blog.Core.Controllers.ImgController">
             <summary>
             图片管理
             </summary>
         </member>
-        <member name="M:Blog.Core.Controllers.ImgController.DownImg(Microsoft.AspNetCore.Hosting.IHostingEnvironment)">
+        <member name="M:Blog.Core.Controllers.ImgController.DownImg(Microsoft.AspNetCore.Hosting.IWebHostEnvironment)">
             <summary>
             下载图片（支持中文字符）
             </summary>
             <param name="environment"></param>
             <returns></returns>
         </member>
-        <member name="M:Blog.Core.Controllers.ImgController.InsertPicture(Microsoft.AspNetCore.Hosting.IHostingEnvironment)">
+        <member name="M:Blog.Core.Controllers.ImgController.InsertPicture(Microsoft.AspNetCore.Hosting.IWebHostEnvironment)">
             <summary>
             上传图片,多文件，可以使用 postman 测试，
             如果是单文件，可以 参数写 IFormFile file1
@@ -293,7 +381,7 @@
             登录管理【无权限】
             </summary>
         </member>
-        <member name="M:Blog.Core.Controllers.LoginController.#ctor(Blog.Core.IServices.ISysUserInfoServices,Blog.Core.IServices.IUserRoleServices,Blog.Core.IServices.IRoleServices,Blog.Core.AuthHelper.PermissionRequirement)">
+        <member name="M:Blog.Core.Controllers.LoginController.#ctor(Blog.Core.IServices.ISysUserInfoServices,Blog.Core.IServices.IUserRoleServices,Blog.Core.IServices.IRoleServices,Blog.Core.AuthHelper.PermissionRequirement,Blog.Core.IServices.IRoleModulePermissionServices)">
             <summary>
             构造函数注入
             </summary>
@@ -301,6 +389,7 @@
             <param name="userRoleServices"></param>
             <param name="roleServices"></param>
             <param name="requirement"></param>
+            <param name="roleModulePermissionServices"></param>
         </member>
         <member name="M:Blog.Core.Controllers.LoginController.GetJwtStr(System.String,System.String)">
             <summary>
@@ -356,12 +445,6 @@
             接口管理
             </summary>
         </member>
-        <member name="M:Blog.Core.Controllers.ModuleController.#ctor(Blog.Core.IServices.IModuleServices)">
-            <summary>
-            构造函数
-            </summary>
-            <param name="moduleServices"></param>
-        </member>
         <member name="M:Blog.Core.Controllers.ModuleController.Get(System.Int32,System.String)">
             <summary>
             获取全部接口api
@@ -402,7 +485,7 @@
             菜单管理
             </summary>
         </member>
-        <member name="M:Blog.Core.Controllers.PermissionController.#ctor(Blog.Core.IServices.IPermissionServices,Blog.Core.IServices.IModuleServices,Blog.Core.IServices.IRoleModulePermissionServices,Blog.Core.IServices.IUserRoleServices,Microsoft.AspNetCore.Http.IHttpContextAccessor)">
+        <member name="M:Blog.Core.Controllers.PermissionController.#ctor(Blog.Core.IServices.IPermissionServices,Blog.Core.IServices.IModuleServices,Blog.Core.IServices.IRoleModulePermissionServices,Blog.Core.IServices.IUserRoleServices,Microsoft.AspNetCore.Http.IHttpContextAccessor,Blog.Core.Common.HttpContextUser.IUser)">
             <summary>
             构造函数
             </summary>
@@ -411,6 +494,7 @@
             <param name="roleModulePermissionServices"></param>
             <param name="userRoleServices"></param>
             <param name="httpContext"></param>
+            <param name="user"></param>
         </member>
         <member name="M:Blog.Core.Controllers.PermissionController.Get(System.Int32,System.String)">
             <summary>
@@ -418,6 +502,14 @@
             </summary>
             <param name="page"></param>
             <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Blog.Core.Controllers.PermissionController.GetTreeTable(System.Int32,System.String)">
+            <summary>
+            查询树形 Table
+            </summary>
+            <param name="f">父节点</param>
+            <param name="key">关键字</param>
             <returns></returns>
         </member>
         <member name="M:Blog.Core.Controllers.PermissionController.Post(Blog.Core.Model.Models.Permission)">
@@ -474,12 +566,6 @@
             <summary>
             角色管理
             </summary>
-        </member>
-        <member name="M:Blog.Core.Controllers.RoleController.#ctor(Blog.Core.IServices.IRoleServices)">
-            <summary>
-            构造函数
-            </summary>
-            <param name="roleServices"></param>
         </member>
         <member name="M:Blog.Core.Controllers.RoleController.Get(System.Int32,System.String)">
             <summary>
@@ -582,14 +668,16 @@
             用户管理
             </summary>
         </member>
-        <member name="M:Blog.Core.Controllers.UserController.#ctor(Blog.Core.IServices.ISysUserInfoServices,Blog.Core.IServices.IUserRoleServices,Blog.Core.IServices.IRoleServices,Blog.Core.Common.HttpContextUser.IUser)">
+        <member name="M:Blog.Core.Controllers.UserController.#ctor(Blog.Core.IRepository.UnitOfWork.IUnitOfWork,Blog.Core.IServices.ISysUserInfoServices,Blog.Core.IServices.IUserRoleServices,Blog.Core.IServices.IRoleServices,Blog.Core.Common.HttpContextUser.IUser,Microsoft.Extensions.Logging.ILogger{Blog.Core.Controllers.BlogController})">
             <summary>
             构造函数
             </summary>
+            <param name="unitOfWork"></param>
             <param name="sysUserInfoServices"></param>
             <param name="userRoleServices"></param>
             <param name="roleServices"></param>
             <param name="user"></param>
+            <param name="logger"></param>
         </member>
         <member name="M:Blog.Core.Controllers.UserController.Get(System.Int32,System.String)">
             <summary>
@@ -631,7 +719,6 @@
         <member name="T:Blog.Core.Controllers.UserRoleController">
             <summary>
             用户角色关系
-            【无权限】
             </summary>
         </member>
         <member name="M:Blog.Core.Controllers.UserRoleController.#ctor(Blog.Core.IServices.ISysUserInfoServices,Blog.Core.IServices.IUserRoleServices,Blog.Core.IServices.IRoleServices)">
@@ -670,15 +757,17 @@
             Values控制器
             </summary>
         </member>
-        <member name="M:Blog.Core.Controllers.ValuesController.#ctor(AutoMapper.IMapper,Blog.Core.IServices.IAdvertisementServices,Blog.Core.Model.Love,Blog.Core.IServices.IRoleModulePermissionServices,Blog.Core.Common.HttpContextUser.IUser)">
+        <member name="M:Blog.Core.Controllers.ValuesController.#ctor(Blog.Core.IServices.IBlogArticleServices,AutoMapper.IMapper,Blog.Core.IServices.IAdvertisementServices,Blog.Core.Model.Love,Blog.Core.IServices.IRoleModulePermissionServices,Blog.Core.Common.HttpContextUser.IUser,Blog.Core.IServices.IPasswordLibServices)">
             <summary>
             ValuesController
             </summary>
+            <param name="blogArticleServices"></param>
             <param name="mapper"></param>
             <param name="advertisementServices"></param>
             <param name="love"></param>
             <param name="roleModulePermissionServices"></param>
             <param name="user"></param>
+            <param name="passwordLibServices"></param>
         </member>
         <member name="M:Blog.Core.Controllers.ValuesController.Get">
             <summary>
@@ -707,12 +796,48 @@
             <param name="ClaimType">声明类型，默认 jti </param>
             <returns></returns>
         </member>
+        <member name="M:Blog.Core.Controllers.ValuesController.Source">
+            <summary>
+            to redirect by route template name.
+            </summary>
+        </member>
+        <member name="M:Blog.Core.Controllers.ValuesController.Destination">
+            <summary>
+            route with template name.
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:Blog.Core.Controllers.ValuesController.Post(Blog.Core.Model.Models.BlogArticle,System.Int32)">
             <summary>
             测试 post 一个对象 + 独立参数
             </summary>
             <param name="blogArticle">model实体类参数</param>
             <param name="id">独立参数</param>
+        </member>
+        <member name="M:Blog.Core.Controllers.ValuesController.TestPostPara(System.String)">
+            <summary>
+            测试 post 参数
+            </summary>
+            <param name="name"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Blog.Core.Controllers.ValuesController.RestsharpGet">
+            <summary>
+            测试http请求 RestSharp Get
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Blog.Core.Controllers.ValuesController.RestsharpPost">
+            <summary>
+            测试http请求 RestSharp Post
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Blog.Core.Controllers.ValuesController.TestMutiDBAPI">
+            <summary>
+            测试多库连接
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:Blog.Core.Controllers.ValuesController.Put(System.Int32,System.String)">
             <summary>
@@ -727,12 +852,62 @@
             </summary>
             <param name="id"></param>
         </member>
+        <member name="T:Blog.Core.Extensions.AuthorizationSetup">
+            <summary>
+            Db 启动服务
+            </summary>
+        </member>
+        <member name="T:Blog.Core.Extensions.AutoMapperSetup">
+            <summary>
+            Automapper 启动服务
+            </summary>
+        </member>
+        <member name="T:Blog.Core.Extensions.CorsSetup">
+            <summary>
+            Cors 启动服务
+            </summary>
+        </member>
+        <member name="T:Blog.Core.Extensions.DbSetup">
+            <summary>
+            Db 启动服务
+            </summary>
+        </member>
+        <member name="T:Blog.Core.Extensions.HttpContextSetup">
+            <summary>
+            Db 启动服务
+            </summary>
+        </member>
+        <member name="T:Blog.Core.Extensions.JobSetup">
+            <summary>
+            Cors 启动服务
+            </summary>
+        </member>
+        <member name="T:Blog.Core.Extensions.MemoryCacheSetup">
+            <summary>
+            Cors 启动服务
+            </summary>
+        </member>
+        <member name="T:Blog.Core.Extensions.MiniProfilerSetup">
+            <summary>
+            MiniProfiler 启动服务
+            </summary>
+        </member>
+        <member name="T:Blog.Core.Extensions.SqlsugarSetup">
+            <summary>
+            SqlSugar 启动服务
+            </summary>
+        </member>
+        <member name="T:Blog.Core.Extensions.SwaggerSetup">
+            <summary>
+            Swagger 启动服务
+            </summary>
+        </member>
         <member name="T:Blog.Core.Filter.GlobalRouteAuthorizeConvention">
             <summary>
-            全局路由权限公约
-            目的是针对不同的路由，采用不同的授权过滤器
-            如果不加 [Authorize] 特性，默认是 Permission 策略
-            否则 根据 controller 自带的权限具体执行
+            Summary:全局路由权限公约
+            Remarks:目的是针对不同的路由，采用不同的授权过滤器
+            如果 controller 上不加 [Authorize] 特性，默认都是 Permission 策略
+            否则，如果想特例其他授权机制的话，需要在 controller 上带上  [Authorize]，然后再action上自定义授权即可，比如 [Authorize(Roles = "Admin")]
             </summary>
         </member>
         <member name="T:Blog.Core.Filter.GlobalAuthorizeFilter">
@@ -763,6 +938,63 @@
             开发环境的消息
             </summary>
         </member>
+        <member name="T:Blog.Core.Filter.GlobalRoutePrefixFilter">
+            <summary>
+            全局路由前缀公约
+            </summary>
+        </member>
+        <member name="T:Blog.Core.Middlewares.IPLogMildd">
+            <summary>
+            中间件
+            记录IP请求数据
+            </summary>
+        </member>
+        <member name="F:Blog.Core.Middlewares.IPLogMildd._next">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Blog.Core.Middlewares.IPLogMildd.#ctor(Microsoft.AspNetCore.Http.RequestDelegate)">
+            <summary>
+            
+            </summary>
+            <param name="next"></param>
+        </member>
+        <member name="M:Blog.Core.Middlewares.MiddlewareHelpers.UseJwtTokenAuth(Microsoft.AspNetCore.Builder.IApplicationBuilder)">
+            <summary>
+            自定义授权中间件
+            </summary>
+            <param name="app"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Blog.Core.Middlewares.MiddlewareHelpers.UseReuestResponseLog(Microsoft.AspNetCore.Builder.IApplicationBuilder)">
+            <summary>
+            请求响应中间件
+            </summary>
+            <param name="app"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Blog.Core.Middlewares.MiddlewareHelpers.UseSignalRSendMildd(Microsoft.AspNetCore.Builder.IApplicationBuilder)">
+            <summary>
+            SignalR中间件
+            </summary>
+            <param name="app"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Blog.Core.Middlewares.MiddlewareHelpers.UseExceptionHandlerMidd(Microsoft.AspNetCore.Builder.IApplicationBuilder)">
+            <summary>
+            异常处理中间件
+            </summary>
+            <param name="app"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Blog.Core.Middlewares.MiddlewareHelpers.UseIPLogMildd(Microsoft.AspNetCore.Builder.IApplicationBuilder)">
+            <summary>
+            IP请求中间件
+            </summary>
+            <param name="app"></param>
+            <returns></returns>
+        </member>
         <member name="T:Blog.Core.Middlewares.RequRespLogMildd">
             <summary>
             中间件
@@ -780,7 +1012,25 @@
             </summary>
             <param name="next"></param>
         </member>
-        <member name="P:Blog.Core.Startup.repository">
+        <member name="T:Blog.Core.Middlewares.SignalRSendMildd">
+            <summary>
+            中间件
+            记录请求和响应数据
+            </summary>
+        </member>
+        <member name="F:Blog.Core.Middlewares.SignalRSendMildd._next">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Blog.Core.Middlewares.SignalRSendMildd.#ctor(Microsoft.AspNetCore.Http.RequestDelegate,Microsoft.AspNetCore.SignalR.IHubContext{Blog.Core.Hubs.ChatHub})">
+            <summary>
+            
+            </summary>
+            <param name="next"></param>
+            <param name="hubContext"></param>
+        </member>
+        <member name="P:Blog.Core.Startup.Repository">
             <summary>
             log4net 仓储库
             </summary>

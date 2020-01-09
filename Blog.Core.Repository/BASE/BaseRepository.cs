@@ -1,9 +1,15 @@
-﻿using Blog.Core.Common.DB;
+﻿using Blog.Core.Common;
+using Blog.Core.Common.DB;
+using Blog.Core.Common.LogHelper;
 using Blog.Core.IRepository.Base;
+using Blog.Core.IRepository.UnitOfWork;
 using Blog.Core.Model;
+using Blog.Core.Model.Models;
 using SqlSugar;
+using StackExchange.Profiling;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,31 +18,66 @@ namespace Blog.Core.Repository.Base
 {
     public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : class, new()
     {
-        private DbContext _context;
-        private SqlSugarClient _db;
-        private SimpleClient<TEntity> _entityDb;
+        private readonly IUnitOfWork _unitOfWork;
+        private SqlSugarClient _dbBase;
 
-        public DbContext Context
+        private ISqlSugarClient _db
         {
-            get { return _context; }
-            set { _context = value; }
+            get
+            {
+                /* 如果要开启多库支持，
+                 * 1、在appsettings.json 中开启MutiDBEnabled节点为true，必填
+                 * 2、设置一个主连接的数据库ID，节点MainDB，对应的连接字符串的Enabled也必须true，必填
+                 */
+                if (Appsettings.app(new string[] { "MutiDBEnabled" }).ObjToBool())
+                {
+                    if (typeof(TEntity).GetTypeInfo().GetCustomAttributes(typeof(SugarTable), true).FirstOrDefault((x => x.GetType() == typeof(SugarTable))) is SugarTable sugarTable && !string.IsNullOrEmpty(sugarTable.TableDescription))
+                    {
+                        _dbBase.ChangeDatabase(sugarTable.TableDescription.ToLower());
+                    }
+                    else
+                    {
+                        _dbBase.ChangeDatabase(MainDb.CurrentDbConnId.ToLower());
+                    }
+                }
+
+                if (Appsettings.app(new string[] { "AppSettings", "SqlAOP", "Enabled" }).ObjToBool())
+                {
+                    _dbBase.Aop.OnLogExecuting = (sql, pars) => //SQL执行中事件
+                    {
+                        Parallel.For(0, 1, e =>
+                        {
+                            MiniProfiler.Current.CustomTiming("SQL：", GetParas(pars) + "【SQL语句】：" + sql);
+                            LogLock.OutSql2Log("SqlLog", new string[] { GetParas(pars), "【SQL语句】：" + sql });
+
+                        });
+                    };
+                }
+
+                return _dbBase;
+            }
         }
-        internal SqlSugarClient Db
+
+        private string GetParas(SugarParameter[] pars)
+        {
+            string key = "【SQL参数】：";
+            foreach (var param in pars)
+            {
+                key += $"{param.ParameterName}:{param.Value}\n";
+            }
+
+            return key;
+        }
+
+        internal ISqlSugarClient Db
         {
             get { return _db; }
-            private set { _db = value; }
         }
-        internal SimpleClient<TEntity> entityDb
+
+        public BaseRepository(IUnitOfWork unitOfWork)
         {
-            get { return _entityDb; }
-            private set { _entityDb = value; }
-        }
-        public BaseRepository()
-        {
-            DbContext.Init(BaseDBConfig.ConnectionString, (DbType)BaseDBConfig.DbType);
-            _context = DbContext.GetDbContext();
-            _db = _context.Db;
-            _entityDb = _context.GetEntityDB<TEntity>(_db);
+            _unitOfWork = unitOfWork;
+            _dbBase = unitOfWork.GetDbClient();
         }
 
 
@@ -138,7 +179,13 @@ namespace Blog.Core.Repository.Base
 
         public async Task<bool> Update(string strSql, SugarParameter[] parameters = null)
         {
-            return await Task.Run(() => _db.Ado.ExecuteCommand(strSql, parameters) > 0);
+            //return await Task.Run(() => _db.Ado.ExecuteCommand(strSql, parameters) > 0);
+            return await _db.Ado.ExecuteCommandAsync(strSql, parameters) > 0;
+        }
+
+        public async Task<bool> Update(object operateAnonymousObjects)
+        {
+            return await _db.Updateable<TEntity>(operateAnonymousObjects).ExecuteCommandAsync() > 0;
         }
 
         public async Task<bool> Update(
@@ -224,7 +271,6 @@ namespace Blog.Core.Repository.Base
         /// <returns>数据列表</returns>
         public async Task<List<TEntity>> Query()
         {
-            //return await Task.Run(() => _entityDb.GetList());
             return await _db.Queryable<TEntity>().ToListAsync();
         }
 
@@ -248,7 +294,6 @@ namespace Blog.Core.Repository.Base
         /// <returns>数据列表</returns>
         public async Task<List<TEntity>> Query(Expression<Func<TEntity, bool>> whereExpression)
         {
-            //return await Task.Run(() => _entityDb.GetList(whereExpression));
             return await _db.Queryable<TEntity>().WhereIF(whereExpression != null, whereExpression).ToListAsync();
         }
 
@@ -389,6 +434,30 @@ namespace Blog.Core.Repository.Base
 
             int pageCount = (Math.Ceiling(totalCount.ObjToDecimal() / intPageSize.ObjToDecimal())).ObjToInt();
             return new PageModel<TEntity>() { dataCount = totalCount, pageCount = pageCount, page = intPageIndex, PageSize = intPageSize, data = list };
+        }
+
+
+        /// <summary> 
+        ///查询-多表查询
+        /// </summary> 
+        /// <typeparam name="T">实体1</typeparam> 
+        /// <typeparam name="T2">实体2</typeparam> 
+        /// <typeparam name="T3">实体3</typeparam>
+        /// <typeparam name="TResult">返回对象</typeparam>
+        /// <param name="joinExpression">关联表达式 (join1,join2) => new object[] {JoinType.Left,join1.UserNo==join2.UserNo}</param> 
+        /// <param name="selectExpression">返回表达式 (s1, s2) => new { Id =s1.UserNo, Id1 = s2.UserNo}</param>
+        /// <param name="whereLambda">查询表达式 (w1, w2) =>w1.UserNo == "")</param> 
+        /// <returns>值</returns>
+        public async Task<List<TResult>> QueryMuch<T, T2, T3, TResult>(
+            Expression<Func<T, T2, T3, object[]>> joinExpression,
+            Expression<Func<T, T2, T3, TResult>> selectExpression,
+            Expression<Func<T, T2, T3, bool>> whereLambda = null) where T : class, new()
+        {
+            if (whereLambda == null)
+            {
+                return await _db.Queryable(joinExpression).Select(selectExpression).ToListAsync();
+            }
+            return await _db.Queryable(joinExpression).Where(whereLambda).Select(selectExpression).ToListAsync();
         }
 
     }

@@ -1,16 +1,6 @@
-﻿using Blog.Core.Common.LogHelper;
-using Blog.Core.Hubs;
-using Blog.Core.Log;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
+﻿using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.SignalR;
-using StackExchange.Profiling;
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -31,7 +21,7 @@ namespace Blog.Core.Filter
                 if (!c.Filters.Any(e => e is AuthorizeFilter))
                 {
                     // 没有写特性，就用全局的 Permission 授权
-                    c.Filters.Add(new AuthorizeFilter(PermissionNames.Permission));
+                    c.Filters.Add(new AuthorizeFilter(Permissions.Name));
                 }
                 else {
                     // 写了特性，[Authorize] 或 [AllowAnonymous] ，根据情况进行权限认证

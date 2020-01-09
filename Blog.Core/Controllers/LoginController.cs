@@ -25,9 +25,10 @@ namespace Blog.Core.Controllers
     public class LoginController : Controller
     {
         readonly ISysUserInfoServices _sysUserInfoServices;
-        IUserRoleServices _userRoleServices;
-        IRoleServices _roleServices;
+        readonly IUserRoleServices _userRoleServices;
+        readonly IRoleServices _roleServices;
         readonly PermissionRequirement _requirement;
+        private readonly IRoleModulePermissionServices _roleModulePermissionServices;
 
 
         /// <summary>
@@ -37,12 +38,14 @@ namespace Blog.Core.Controllers
         /// <param name="userRoleServices"></param>
         /// <param name="roleServices"></param>
         /// <param name="requirement"></param>
-        public LoginController(ISysUserInfoServices sysUserInfoServices, IUserRoleServices userRoleServices, IRoleServices roleServices, PermissionRequirement requirement)
+        /// <param name="roleModulePermissionServices"></param>
+        public LoginController(ISysUserInfoServices sysUserInfoServices, IUserRoleServices userRoleServices, IRoleServices roleServices, PermissionRequirement requirement, IRoleModulePermissionServices roleModulePermissionServices)
         {
             this._sysUserInfoServices = sysUserInfoServices;
             this._userRoleServices = userRoleServices;
             this._roleServices = roleServices;
             _requirement = requirement;
+            _roleModulePermissionServices = roleModulePermissionServices;
         }
 
 
@@ -99,9 +102,11 @@ namespace Blog.Core.Controllers
             //这里直接写死了
             if (name == "admins" && pass == "admins")
             {
-                TokenModelJwt tokenModel = new TokenModelJwt();
-                tokenModel.Uid = 1;
-                tokenModel.Role = "Admin";
+                TokenModelJwt tokenModel = new TokenModelJwt
+                {
+                    Uid = 1,
+                    Role = "Admin"
+                };
 
                 jwtStr = JwtHelper.IssueJwt(tokenModel);
                 suc = true;
@@ -158,6 +163,19 @@ namespace Blog.Core.Controllers
                     new Claim(JwtRegisteredClaimNames.Jti, user.FirstOrDefault().uID.ToString()),
                     new Claim(ClaimTypes.Expiration, DateTime.Now.AddSeconds(_requirement.Expiration.TotalSeconds).ToString()) };
                 claims.AddRange(userRoles.Split(',').Select(s => new Claim(ClaimTypes.Role, s)));
+
+
+                var data = await _roleModulePermissionServices.RoleModuleMaps();
+                var list = (from item in data
+                            where item.IsDeleted == false
+                            orderby item.Id
+                            select new PermissionItem
+                            {
+                                Url = item.Module?.LinkUrl,
+                                Role = item.Role?.Name,
+                            }).ToList();
+
+                _requirement.Permissions = list;
 
                 //用户标识
                 var identity = new ClaimsIdentity(JwtBearerDefaults.AuthenticationScheme);
@@ -241,9 +259,11 @@ namespace Blog.Core.Controllers
         [Route("jsonp")]
         public void Getjsonp(string callBack, long id = 1, string sub = "Admin", int expiresSliding = 30, int expiresAbsoulute = 30)
         {
-            TokenModelJwt tokenModel = new TokenModelJwt();
-            tokenModel.Uid = id;
-            tokenModel.Role = sub;
+            TokenModelJwt tokenModel = new TokenModelJwt
+            {
+                Uid = id,
+                Role = sub
+            };
 
             string jwtStr = JwtHelper.IssueJwt(tokenModel);
 

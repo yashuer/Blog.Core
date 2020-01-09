@@ -13,5 +13,7 @@ namespace Blog.Core.IServices
 
         Task<List<RoleModulePermission>> GetRoleModule();
         Task<List<RoleModulePermission>> TestModelWithChildren();
+        Task<List<TestMuchTableResult>> QueryMuchTable();
+        Task<List<RoleModulePermission>> RoleModuleMaps();
     }
 }

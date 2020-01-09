@@ -19,20 +19,6 @@ namespace Blog.Core.Controllers
     [Authorize]
     public class ImgController : Controller
     {
-        // GET: api/Img
-        [HttpGet]
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
-
-        // GET: api/Img/5
-        [HttpGet("{id}", Name = "Get")]
-        public string Get(int id)
-        {
-            return "value";
-        }
-
         // GET: api/Download
         /// <summary>
         /// 下载图片（支持中文字符）
@@ -40,8 +26,8 @@ namespace Blog.Core.Controllers
         /// <param name="environment"></param>
         /// <returns></returns>
         [HttpGet]
-        [Route("down")]
-        public FileStreamResult DownImg([FromServices]IHostingEnvironment environment)
+        [Route("/images/Down/Pic")]
+        public FileStreamResult DownImg([FromServices]IWebHostEnvironment environment)
         {
             string foldername = "";
             string filepath = Path.Combine(environment.WebRootPath, foldername, "测试下载中文名称的图片.png");
@@ -63,8 +49,8 @@ namespace Blog.Core.Controllers
         /// <param name="environment"></param>
         /// <returns></returns>
         [HttpPost]
-        [Route("Pic")]
-        public async Task<MessageModel<string>> InsertPicture([FromServices]IHostingEnvironment environment)
+        [Route("/images/Upload/Pic")]
+        public async Task<MessageModel<string>> InsertPicture([FromServices]IWebHostEnvironment environment)
         {
             var data = new MessageModel<string>();
             string path = string.Empty;
@@ -85,9 +71,9 @@ namespace Blog.Core.Controllers
             var allowType = new string[] { "image/jpg", "image/png", "image/jpeg" };
 
             string folderpath = Path.Combine(environment.WebRootPath, foldername);
-            if (!System.IO.Directory.Exists(folderpath))
+            if (!Directory.Exists(folderpath))
             {
-                System.IO.Directory.CreateDirectory(folderpath);
+                Directory.CreateDirectory(folderpath);
             }
 
             if (files.Any(c => allowType.Contains(c.ContentType)))
